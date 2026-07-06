@@ -28,5 +28,37 @@ export const actions: Actions = {
 		});
 
 		return { success: true };
+	},
+
+	update: async ({ request }) => {
+		const formData = await request.formData();
+		const id = Number(formData.get('id'));
+		const name = formData.get('name')?.toString().trim();
+		const email = formData.get('email')?.toString().trim();
+
+		if (!name) {
+			return fail(400, { error: 'Name is required' });
+		}
+
+		await prisma.player.update({
+			where: { id },
+			data: {
+				name,
+				email: email || null
+			}
+		});
+
+		return { success: true };
+	},
+
+	delete: async ({ request }) => {
+		const formData = await request.formData();
+		const id = Number(formData.get('id'));
+
+		await prisma.player.delete({
+			where: { id }
+		});
+
+		return { success: true };
 	}
 };
