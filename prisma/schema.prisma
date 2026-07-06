@@ -1,0 +1,61 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Player {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String?  @unique
+  createdAt DateTime @default(now())
+
+  tournaments TournamentPlayer[]
+  matchesAsPlayer1 Match[] @relation("Player1Matches")
+  matchesAsPlayer2 Match[] @relation("Player2Matches")
+  matchesWon       Match[] @relation("WinnerMatches")
+}
+
+model Tournament {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+
+  players TournamentPlayer[]
+  matches Match[]
+}
+
+model TournamentPlayer {
+  id           Int        @id @default(autoincrement())
+  player       Player     @relation(fields: [playerId], references: [id])
+  playerId     Int
+  tournament   Tournament @relation(fields: [tournamentId], references: [id])
+  tournamentId Int
+
+  @@unique([playerId, tournamentId])
+}
+
+model Match {
+  id           Int        @id @default(autoincrement())
+  tournament   Tournament @relation(fields: [tournamentId], references: [id])
+  tournamentId Int
+
+  player1   Player @relation("Player1Matches", fields: [player1Id], references: [id])
+  player1Id Int
+
+  player2   Player @relation("Player2Matches", fields: [player2Id], references: [id])
+  player2Id Int
+
+  winner   Player? @relation("WinnerMatches", fields: [winnerId], references: [id])
+  winnerId Int?
+
+  playedAt DateTime @default(now())
+}
