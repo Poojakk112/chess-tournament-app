@@ -2,21 +2,42 @@
 	import { enhance } from '$app/forms';
 
 	let { data, form } = $props();
+
+	let editingId = $state<number | null>(null);
+
+	function startEdit(id: number) {
+		editingId = id;
+	}
+
+	function cancelEdit() {
+		editingId = null;
+	}
 </script>
 
 <div class="max-w-2xl mx-auto p-6">
-	<h1 class="text-2xl font-bold mb-4">Tournaments</h1>
+	<h1 class="text-2xl font-bold mb-4">Players</h1>
 
 	<form method="POST" action="?/create" use:enhance class="mb-6 border rounded p-4 space-y-3">
 		<div>
-			<label for="name" class="block text-sm font-medium mb-1">Tournament Name</label>
+			<label for="name" class="block text-sm font-medium mb-1">Name</label>
 			<input
 				id="name"
 				name="name"
 				type="text"
 				required
 				class="w-full border rounded px-3 py-2"
-				placeholder="e.g. Summer Chess Open 2026"
+				placeholder="Player name"
+			/>
+		</div>
+
+		<div>
+			<label for="email" class="block text-sm font-medium mb-1">Email (optional)</label>
+			<input
+				id="email"
+				name="email"
+				type="email"
+				class="w-full border rounded px-3 py-2"
+				placeholder="player@example.com"
 			/>
 		</div>
 
@@ -25,57 +46,79 @@
 		{/if}
 
 		<button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-			Create Tournament
+			Add Player
 		</button>
 	</form>
 
-	{#if data.tournaments.length === 0}
-		<p class="text-gray-500">No tournaments yet.</p>
+	{#if data.players.length === 0}
+		<p class="text-gray-500">No players yet.</p>
 	{:else}
-		<ul class="space-y-4">
-			{#each data.tournaments as tournament (tournament.id)}
-				<li class="border rounded p-4">
-					<div class="flex justify-between items-center mb-3">
-						<h2 class="font-semibold text-lg">{tournament.name}</h2>
-						<form method="POST" action="?/delete" use:enhance>
-							<input type="hidden" name="id" value={tournament.id} />
-							<button type="submit" class="text-sm text-red-600 hover:underline">
-								Delete Tournament
-							</button>
+		<ul class="space-y-2">
+			{#each data.players as player (player.id)}
+				<li class="border rounded p-3">
+					{#if editingId === player.id}
+						<form
+							method="POST"
+							action="?/update"
+							use:enhance={() => {
+								return async ({ update }) => {
+									editingId = null;
+									await update();
+								};
+							}}
+							class="space-y-2"
+						>
+							<input type="hidden" name="id" value={player.id} />
+							<input
+								name="name"
+								type="text"
+								required
+								value={player.name}
+								class="w-full border rounded px-2 py-1"
+							/>
+							<input
+								name="email"
+								type="email"
+								value={player.email ?? ''}
+								class="w-full border rounded px-2 py-1"
+							/>
+							<div class="flex gap-2">
+								<button type="submit" class="bg-green-600 text-white px-3 py-1 rounded text-sm">
+									Save
+								</button>
+								<button
+									type="button"
+									onclick={cancelEdit}
+									class="bg-gray-300 px-3 py-1 rounded text-sm"
+								>
+									Cancel
+								</button>
+							</div>
 						</form>
-					</div>
-
-					<p class="text-sm font-medium text-gray-600 mb-1">Players in this tournament:</p>
-					{#if tournament.players.length === 0}
-						<p class="text-sm text-gray-400 mb-2">No players added yet.</p>
 					{:else}
-						<ul class="mb-2 space-y-1">
-							{#each tournament.players as tp (tp.id)}
-								<li class="flex justify-between items-center text-sm bg-gray-50 rounded px-2 py-1">
-									<span>{tp.player.name}</span>
-									<form method="POST" action="?/removePlayer" use:enhance>
-										<input type="hidden" name="id" value={tp.id} />
-										<button type="submit" class="text-red-600 hover:underline text-xs">
-											Remove
-										</button>
-									</form>
-								</li>
-							{/each}
-						</ul>
+						<div class="flex justify-between items-center">
+							<div>
+								<p class="font-medium">{player.name}</p>
+								{#if player.email}
+									<p class="text-sm text-gray-500">{player.email}</p>
+								{/if}
+							</div>
+							<div class="flex gap-2">
+								<button
+									onclick={() => startEdit(player.id)}
+									class="text-sm text-blue-600 hover:underline"
+								>
+									Edit
+								</button>
+								<form method="POST" action="?/delete" use:enhance>
+									<input type="hidden" name="id" value={player.id} />
+									<button type="submit" class="text-sm text-red-600 hover:underline">
+										Delete
+									</button>
+								</form>
+							</div>
+						</div>
 					{/if}
-
-					<form method="POST" action="?/addPlayer" use:enhance class="flex gap-2">
-						<input type="hidden" name="tournamentId" value={tournament.id} />
-						<select name="playerId" required class="border rounded px-2 py-1 text-sm flex-1">
-							<option value="">Select a player...</option>
-							{#each data.allPlayers as player (player.id)}
-								<option value={player.id}>{player.name}</option>
-							{/each}
-						</select>
-						<button type="submit" class="bg-green-600 text-white px-3 py-1 rounded text-sm">
-							Add
-						</button>
-					</form>
 				</li>
 			{/each}
 		</ul>
