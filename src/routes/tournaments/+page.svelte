@@ -45,6 +45,20 @@
 						</form>
 					</div>
 
+					{#if tournament.rankings.length > 0}
+						<div class="mb-3 bg-blue-50 rounded p-3">
+							<p class="text-sm font-semibold text-gray-700 mb-1">🏆 Rankings</p>
+							<ol class="text-sm space-y-1">
+								{#each tournament.rankings as rank, i (rank.name)}
+									<li>
+										{#if i === 0}🥇{:else if i === 1}🥈{:else if i === 2}🥉{/if}
+										{rank.name} — {rank.wins} win{rank.wins === 1 ? '' : 's'}
+									</li>
+								{/each}
+							</ol>
+						</div>
+					{/if}
+
 					<p class="text-sm font-medium text-gray-600 mb-1">Players in this tournament:</p>
 					{#if tournament.players.length === 0}
 						<p class="text-sm text-gray-400 mb-2">No players added yet.</p>

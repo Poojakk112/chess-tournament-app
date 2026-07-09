@@ -21,7 +21,26 @@ export async function load() {
 		orderBy: { name: 'asc' }
 	});
 
-	return { tournaments, allPlayers };
+	const tournamentsWithRankings = tournaments.map((tournament) => {
+		const winCounts = new Map<number, { name: string; wins: number }>();
+		for (const tp of tournament.players) {
+			winCounts.set(tp.player.id, { name: tp.player.name, wins: 0 });
+		}
+
+		for (const match of tournament.matches) {
+			if (match.winnerId && winCounts.has(match.winnerId)) {
+				winCounts.get(match.winnerId)!.wins += 1;
+			}
+		}
+
+		const rankings = Array.from(winCounts.values())
+			.sort((a, b) => b.wins - a.wins)
+			.slice(0, 3);
+
+		return { ...tournament, rankings };
+	});
+
+	return { tournaments: tournamentsWithRankings, allPlayers };
 }
 
 export const actions: Actions = {

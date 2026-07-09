@@ -55,9 +55,15 @@ export const actions: Actions = {
 		const formData = await request.formData();
 		const id = Number(formData.get('id'));
 
-		await prisma.player.delete({
-			where: { id }
-		});
+		try {
+			await prisma.player.delete({
+				where: { id }
+			});
+		} catch (err) {
+			return fail(400, {
+				error: 'Cannot delete this player - they are part of a tournament. Remove them from the tournament first.'
+			});
+		}
 
 		return { success: true };
 	}
