@@ -80,13 +80,18 @@ export const actions: Actions = {
 		const formData = await request.formData();
 		const id = Number(formData.get('id'));
 
-		await prisma.tournament.delete({
-			where: { id }
-		});
+		try {
+			await prisma.tournament.delete({
+				where: { id }
+			});
+		} catch (err) {
+			return fail(400, {
+				error: 'Cannot delete this tournament - it has matches or players linked to it.'
+			});
+		}
 
 		return { success: true };
 	},
-
 	addPlayer: async ({ request }) => {
 		const formData = await request.formData();
 		const tournamentId = Number(formData.get('tournamentId'));
