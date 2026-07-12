@@ -2,6 +2,16 @@
 	import { enhance } from '$app/forms';
 
 	let { data, form } = $props();
+
+	let editingTournamentId = $state<number | null>(null);
+
+	function startEditTournament(id: number) {
+		editingTournamentId = id;
+	}
+
+	function cancelEditTournament() {
+		editingTournamentId = null;
+	}
 </script>
 
 <div class="max-w-2xl mx-auto p-6">
@@ -36,13 +46,54 @@
 			{#each data.tournaments as tournament (tournament.id)}
 				<li class="border rounded p-4">
 					<div class="flex justify-between items-center mb-3">
-						<h2 class="font-semibold text-lg">{tournament.name}</h2>
-						<form method="POST" action="?/delete" use:enhance>
-							<input type="hidden" name="id" value={tournament.id} />
-							<button type="submit" class="text-sm text-red-600 hover:underline">
-								Delete Tournament
-							</button>
-						</form>
+						{#if editingTournamentId === tournament.id}
+							<form
+								method="POST"
+								action="?/update"
+								use:enhance={() => {
+									return async ({ update }) => {
+										editingTournamentId = null;
+										await update();
+									};
+								}}
+								class="flex gap-2 flex-1"
+							>
+								<input type="hidden" name="id" value={tournament.id} />
+								<input
+									name="name"
+									type="text"
+									required
+									value={tournament.name}
+									class="border rounded px-2 py-1 text-sm flex-1"
+								/>
+								<button type="submit" class="bg-green-600 text-white px-3 py-1 rounded text-sm">
+									Save
+								</button>
+								<button
+									type="button"
+									onclick={cancelEditTournament}
+									class="bg-gray-300 px-3 py-1 rounded text-sm"
+								>
+									Cancel
+								</button>
+							</form>
+						{:else}
+							<h2 class="font-semibold text-lg">{tournament.name}</h2>
+							<div class="flex gap-3 items-center">
+								<button
+									onclick={() => startEditTournament(tournament.id)}
+									class="text-sm text-blue-600 hover:underline"
+								>
+									Edit
+								</button>
+								<form method="POST" action="?/delete" use:enhance>
+									<input type="hidden" name="id" value={tournament.id} />
+									<button type="submit" class="text-sm text-red-600 hover:underline">
+										Delete Tournament
+									</button>
+								</form>
+							</div>
+						{/if}
 					</div>
 
 					{#if tournament.rankings.length > 0}

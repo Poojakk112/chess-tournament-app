@@ -59,6 +59,23 @@ export const actions: Actions = {
 		return { success: true };
 	},
 
+	update: async ({ request }) => {
+		const formData = await request.formData();
+		const id = Number(formData.get('id'));
+		const name = formData.get('name')?.toString().trim();
+
+		if (!name) {
+			return fail(400, { error: 'Tournament name is required' });
+		}
+
+		await prisma.tournament.update({
+			where: { id },
+			data: { name }
+		});
+
+		return { success: true };
+	},
+
 	delete: async ({ request }) => {
 		const formData = await request.formData();
 		const id = Number(formData.get('id'));
