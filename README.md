@@ -2,6 +2,17 @@
 
 A web application to manage chess players, tournaments, and matches — built as a technical assignment for Bytelogik.
 
+## 🌐 Live Demo
+
+👉 **[chess-tournament-app-bice.vercel.app](https://chess-tournament-app-bice.vercel.app/)**
+
+## 📸 Screenshots
+
+| Tournaments | Rankings & Match Results |
+|---|---|
+| ![Tournaments](screenshots/tournaments.jpg) | ![Rankings and matches](screenshots/rankings-and-matches.jpg) |
+
+
 ## Features
 
 - **Player Management** — Create, view, edit, and delete players
